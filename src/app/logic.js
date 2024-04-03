@@ -1,3 +1,5 @@
+import { Unity, unityContext } from 'react-unity-webgl'
+
 const DEFAULT_FENCE_LENGTH = 1
 const DEFAULT_FENCE_ANGLE = 0
 const DEFAULT_FENCE_COUNT = 4
@@ -33,8 +35,9 @@ export class Fence {
 
 export default class Logic {
 
-    constructor(fenceCount = DEFAULT_FENCE_COUNT) {
+    constructor(sendMessage, fenceCount = DEFAULT_FENCE_COUNT) {
         this.fences = []
+        this.sendMessage = sendMessage
 
         for (let i = 0; i < fenceCount; i++) {
             this.addFence()
@@ -66,7 +69,16 @@ export default class Logic {
         this.removeFenceUntilAtCount(count)
     }
 
+    json() {
+        let result = []
+        for (let fence of this.fences) {
+            result.push({length: fence.length, angle: fence.angle})
+        }
+
+        return JSON.stringify({fences: result})
+    }
+
     syncToUnity() {
-        // send out JSON on sendMessage
+        this.sendMessage("FenceGroup", "SyncFromJSON", this.json())
     }
 }

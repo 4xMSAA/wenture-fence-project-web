@@ -7,17 +7,22 @@ const PATH = "unity/Build/"
 const UNITY_BUILD_NAME = "UnityFence"
 
 
-const logic = new Logic()
 
 const FenceList = ({fencesList, setFencesList, logic}) => {
     const list = fencesList.map((fence, i) => {
         function onChangeLength(e) {
             logic.fences[i].length = parseFloat(e.target.value)
-            setFencesList(logic.fences.slice())
+            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
+            setFencesList(logic.fences)
+            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
+            logic.syncToUnity()
         }
         function onChangeAngle(e) {
             logic.fences[i].angle = parseFloat(e.target.value)
-            setFencesList(logic.fences.slice())
+            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
+            setFencesList(logic.fences)
+            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
+            logic.syncToUnity()
         }
 
         return <li>
@@ -32,21 +37,27 @@ const FenceList = ({fencesList, setFencesList, logic}) => {
 }
 
 export default function App() {
-    const { unityProvider } = useUnityContext({
+    const { unityProvider, sendMessage } = useUnityContext({
         loaderUrl: `${PATH}${UNITY_BUILD_NAME}.loader.js`,
         dataUrl: `${PATH}${UNITY_BUILD_NAME}.data`,
         frameworkUrl: `${PATH}${UNITY_BUILD_NAME}.framework.js`,
         codeUrl: `${PATH}${UNITY_BUILD_NAME}.wasm`,
     });
 
+    const logic = new Logic(sendMessage)
+
     const [fenceCount, setFenceCount] = useState(logic.fences.length)
-    const [fencesList, setFencesList] = useState(logic.fences.slice())
+    const [fencesList, setFencesList] = useState(logic.fences)
 
     function onChangeFenceCount(e) {
         logic.setFenceCount(parseInt(e.target.value))
+        console.log(fencesList, logic.fences, fenceCount)
         setFenceCount(logic.fences.length)
-        setFencesList(logic.fences.slice())
+        setFencesList(logic.fences)
+        console.log(fencesList, logic.fences, fenceCount)
+        logic.syncToUnity()
     }
+
 
     return (
         <div id="app" style={{position: "absolute", width: "100vw", height: "100vh"}}>
@@ -54,7 +65,11 @@ export default function App() {
             <input type="number" min="0" value={fenceCount} onChange={onChangeFenceCount}/>
             <FenceList fencesList={fencesList} setFencesList={setFencesList} logic={logic}/>
         </span>
-        <Unity unityProvider={unityProvider} style={{width: "100vw", height:"100vh", verticalAlign: "top"}} />
+        <Unity unityProvider={unityProvider} style={{width: "100vw", height:"100vh", verticalAlign: "top"}} 
+               onProgress={(progress) => {
+                   if (progress == 1)
+                       logic.syncToUnity()
+               } }/>
         </div>
     );
 }
