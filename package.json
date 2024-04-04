@@ -1,6 +1,6 @@
 {
-  "name": "experiment",
-  "version": "0.1.0",
+  "name": "unity-fence",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

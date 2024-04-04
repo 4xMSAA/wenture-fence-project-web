@@ -1,10 +1,8 @@
-import { Unity, unityContext } from 'react-unity-webgl'
-
 const DEFAULT_FENCE_LENGTH = 1
 const DEFAULT_FENCE_ANGLE = 0
 const DEFAULT_FENCE_COUNT = 4
 
-const [MIN_ANGLE, MAX_ANGLE] = [0, 180]
+const [MIN_ANGLE, MAX_ANGLE] = [-180, 180]
 const MIN_LENGTH = 0.01
 
 export class Fence {
@@ -33,9 +31,12 @@ export class Fence {
     }
 }
 
+let logic_instance_counter = 0
 export default class Logic {
 
     constructor(sendMessage, fenceCount = DEFAULT_FENCE_COUNT) {
+        logic_instance_counter += 1;
+        console.log("logic instances made:", logic_instance_counter)
         this.fences = []
         this.sendMessage = sendMessage
 

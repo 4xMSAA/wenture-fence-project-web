@@ -7,27 +7,29 @@ const PATH = "unity/Build/"
 const UNITY_BUILD_NAME = "UnityFence"
 
 
+const logic = new Logic()
 
-const FenceList = ({fencesList, setFencesList, logic}) => {
+function onChangeFenceCount(setFenceCount, setFencesList, e) {
+    logic.setFenceCount(parseInt(e.target.value))
+    setFenceCount(logic.fences.length)
+    setFencesList([...logic.fences]) // ???
+}
+
+function onChangeLength(setFencesList, e, i) {
+    logic.fences[i].length = parseFloat(e.target.value)
+    setFencesList([...logic.fences])
+}
+function onChangeAngle(setFencesList, e, i) {
+    logic.fences[i].angle = parseFloat(e.target.value)
+    setFencesList([...logic.fences])
+}
+
+
+const FenceList = ({fencesList, setFencesList}) => {
     const list = fencesList.map((fence, i) => {
-        function onChangeLength(e) {
-            logic.fences[i].length = parseFloat(e.target.value)
-            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
-            setFencesList(logic.fences)
-            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
-            logic.syncToUnity()
-        }
-        function onChangeAngle(e) {
-            logic.fences[i].angle = parseFloat(e.target.value)
-            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
-            setFencesList(logic.fences)
-            console.log(fencesList, logic.fences, i, logic.fences[i].length, logic.fences[i].angle)
-            logic.syncToUnity()
-        }
-
-        return <li>
-            <input type="number" value={fence.length} step="0.01" min="0.01" onChange={onChangeLength} />
-            <input type="number" value={fence.angle} step="1" min="0" max="180" onChange={onChangeAngle} />
+        return <li key={"fence-list-key-" + i}>
+            <input type="number" value={fence.length} step="0.01" min="0.01" onChange={(e) => onChangeLength(setFencesList, e, i)} />
+            <input type="number" value={fence.angle} step="1" min="-180" max="180" onChange={(e) => onChangeAngle(setFencesList, e, i)} />
         </li>
     })
 
@@ -44,32 +46,24 @@ export default function App() {
         codeUrl: `${PATH}${UNITY_BUILD_NAME}.wasm`,
     });
 
-    const logic = new Logic(sendMessage)
+    logic.sendMessage = sendMessage
 
     const [fenceCount, setFenceCount] = useState(logic.fences.length)
-    const [fencesList, setFencesList] = useState(logic.fences)
+    const [fencesList, setFencesList] = useState([...logic.fences])
 
-    function onChangeFenceCount(e) {
-        logic.setFenceCount(parseInt(e.target.value))
-        console.log(fencesList, logic.fences, fenceCount)
-        setFenceCount(logic.fences.length)
-        setFencesList(logic.fences)
-        console.log(fencesList, logic.fences, fenceCount)
-        logic.syncToUnity()
-    }
-
+    logic.syncToUnity()
 
     return (
         <div id="app" style={{position: "absolute", width: "100vw", height: "100vh"}}>
         <span style={{position: "absolute", margin: "1rem 0 0 1rem"}}>
-            <input type="number" min="0" value={fenceCount} onChange={onChangeFenceCount}/>
-            <FenceList fencesList={fencesList} setFencesList={setFencesList} logic={logic}/>
+            <input type="number" min="0" value={fenceCount} onChange={(e) => onChangeFenceCount(setFenceCount, setFencesList, e)}/>
+            <FenceList fencesList={fencesList} setFencesList={setFencesList} />
         </span>
-        <Unity unityProvider={unityProvider} style={{width: "100vw", height:"100vh", verticalAlign: "top"}} 
-               onProgress={(progress) => {
-                   if (progress == 1)
-                       logic.syncToUnity()
-               } }/>
+        <Unity 
+            unityProvider={unityProvider} 
+            style={{width: "100vw", height:"100vh", verticalAlign: "top"}} 
+            tabIndex={1} 
+        />
         </div>
     );
 }
